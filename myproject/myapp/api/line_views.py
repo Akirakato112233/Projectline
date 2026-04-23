@@ -17,10 +17,14 @@ from linebot.v3.messaging import (
     Configuration,
     MessagingApi,
     ReplyMessageRequest,
+    TextMessage,
 )
 from linebot.v3.webhooks import MessageEvent, TextMessageContent
 
-from .services import AstrologyService
+from .services import call_dify_astrology
+
+from myapp.handlers import process_user_message
+
 
 logger = logging.getLogger(__name__)
 
@@ -68,8 +72,7 @@ def webhook(request):
 
 def handle_message(event):
     user_text = event.message.text
-    #logic
-    reply_message = user_text
+    reply_message = process_user_message(event.source.user_id, user_text)
     configuration = get_configuration()
     logger.info("Received LINE message: %s", user_text)
     if configuration is None:
@@ -81,9 +84,9 @@ def handle_message(event):
             line_bot_api.reply_message(
                 ReplyMessageRequest(
                     reply_token=event.reply_token,
-                    messages=[reply_message],
+                    messages=[TextMessage(text=reply_message)],
                 )
-            )
+                )
     except ApiException as e:
         logger.exception("LINE reply API failed")
         raise ValueError(

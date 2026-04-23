@@ -6,8 +6,13 @@ from django.test import Client, TestCase
 from django.urls import resolve, reverse
 
 from .models import ZodiacKnowledge
-from .handlers import build_zodiac_reply, extract_subject_and_category
-from .views import get_configuration, get_handler, webhook
+from .views import (
+    build_zodiac_reply,
+    extract_subject_and_category,
+    get_configuration,
+    get_handler,
+    webhook,
+)
 
 
 class WebhookUrlTests(TestCase):

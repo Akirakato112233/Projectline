@@ -16,9 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from myapp import views
+from myapp.api import line_views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/line/webhook/', views.webhook, name='webhook'),
+    path("admin/", admin.site.urls),
+    path("api/line/webhook/", line_views.webhook, name="webhook"),
 ]
+

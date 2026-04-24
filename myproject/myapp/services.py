@@ -77,18 +77,27 @@ def get_smart_province(user_input):
     else:
         return "กรุงเทพ"
 
-def calculate_with_ascendant(birth_date, birth_time, lat, lon):
-    # 1. เตรียม Julian Day (เวลาสากล)
-    dt = datetime.combine(birth_date, birth_time)
-    jd = swe.julday(dt.year, dt.month, dt.day, dt.hour + dt.minute/60 - 7) # UTC+7
+import swisseph as swe
 
-    # 2. คำนวณหาลัคนา (Ascendant) และเรือนชะตา (Houses)
-    # เราใช้ระบบเรือนชะตาแบบ P (Placidus) ที่นิยมใช้กันทั่วไป
-    houses, ascmc = swe.houses(jd, lat, lon, b'P')
+def calculate_with_ascendant(birth_date, birth_time, lat, lon):
+    # 1. ตั้งค่าให้เป็นระบบ Sidereal (นิรายนะ) แบบ Lahiri
+    swe.set_sid_mode(swe.SIDM_LAHIRI) 
     
-    ascendant_degree = ascmc[0] # ลัคนาคือค่าแรกใน list ascmc
+    # 2. เตรียม Julian Day (เวลาสากล UTC+7)
+    dt = datetime.combine(birth_date, birth_time)
+    # ควรใช้เวลาสากล (UTC) ในการคำนวณ 
+    # ถ้าเกิดที่ไทย (UTC+7) ต้องลบออก 7 ชั่วโมง
+    jd_utc = swe.julday(dt.year, dt.month, dt.day, (dt.hour + dt.minute/60) - 7)
+
+    # 3. คำนวณหาลัคนา (Ascendant)
+    # เพิ่ม Flag: swe.FLG_SIDEREAL เพื่อบอกให้คำนวณแบบนิรายนะ
+    # ระบบเรือนชะตาไทยส่วนใหญ่ใช้แบบ Whole Sign หรือ Equal 
+    # แต่ถ้าจะเอาแค่ลัคนา ใช้ระบบ 'P' หรือ 'O' ก็ได้ค่า Ascendant เท่ากันครับ
+    houses, ascmc = swe.houses_ex(jd_utc, swe.FLG_SIDEREAL, lat, lon, b'P')
     
-    # 3. แปลงองศาเป็นชื่อราศี
+    ascendant_degree = ascmc[0] 
+    
+    # 4. แปลงองศาเป็นชื่อราศี
     zodiac_names = ["เมษ", "พฤษภ", "เมถุน", "กรกฎ", "สิงห์", "กันย์", 
                     "ตุลย์", "พิจิก", "ธนู", "มังกร", "กุมภ์", "มีน"]
     

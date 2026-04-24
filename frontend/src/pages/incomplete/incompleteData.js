@@ -1,0 +1,51 @@
+export const incompleteProfiles = [
+  {
+    id: 1,
+    name: "ชัยวัฒน์ สมศักดิ์",
+    lineId: "U1KX08tahnut...",
+    missingFields: ["ราศี"],
+    completion: 80,
+  },
+  {
+    id: 2,
+    name: "อรพรรณ สุขใจ",
+    lineId: "U4gg43x1vnnl...",
+    missingFields: ["ราศี"],
+    completion: 80,
+  },
+  {
+    id: 3,
+    name: "ธีรพงษ์ กล้าหาญ",
+    lineId: "Um17jt54vi9m...",
+    missingFields: ["ราศี"],
+    completion: 80,
+  },
+  {
+    id: 4,
+    name: "วริดรา พรหม",
+    lineId: "Uxfakmskb0rp...",
+    missingFields: ["ราศี"],
+    completion: 80,
+  },
+  {
+    id: 5,
+    name: "สุรศักดิ์ มั่งมี",
+    lineId: "Unxvl1rdwfo...",
+    missingFields: ["วันเกิด", "ราศี"],
+    completion: 60,
+  },
+  {
+    id: 6,
+    name: "ชนิดา แสงสว่าง",
+    lineId: "Uqfvteuakd8...",
+    missingFields: ["วันเกิด", "ราศี"],
+    completion: 60,
+  },
+  {
+    id: 7,
+    name: "ปิยะ รุ่งเรือง",
+    lineId: "Uqowd8obn07b...",
+    missingFields: ["วันเกิด", "ราศี"],
+    completion: 60,
+  },
+]

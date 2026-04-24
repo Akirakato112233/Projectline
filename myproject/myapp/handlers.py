@@ -13,6 +13,7 @@ from .services import (
 
 def process_user_message(user_id, message_text):
     user, created = User.objects.get_or_create(line_user_id=user_id)
+    message_text = message_text.strip()
 
 
     if user.step < 2:
@@ -51,8 +52,13 @@ def process_user_message(user_id, message_text):
         "current_date": now.strftime("%d/%m/%Y"),
         "current_time": now.strftime("%H:%M"),
     }
-
-    return call_dify_astrology(
+    if message_text == "ดูข้อมูลตัวเอง":
+        return build_user_profile_message(user)
+    elif message_text == "แก้ไขข้อมูล":
+        user.step = 0
+        user.save()
+        return "คุณสามารถส่งข้อมูลใหม่ได้เลยครับ"  
+    return call_dify_astrology(                 
         user_query=message_text,
         star_data=star_data,
         user_id=user.line_user_id,
@@ -67,10 +73,9 @@ def extract_data(text):
     for line in lines:
         if ':' in line:
             parts = line.split(':', 1)
-            key = parts[0].strip()   # เช่น "ชื่อ"
-            value = parts[1].strip()  # เช่น "สมชาย สายมู"
+            key = parts[0].strip()  
+            value = parts[1].strip() 
             
-            # เอาข้อมูลมาเก็บใส่ถังตามชื่อหัวข้อ
             if "ชื่อ" in key: result['name'] = value
             if "เกิด" in key: result['date'] = value
             if "เวลา" in key: result['time'] = value
@@ -103,6 +108,19 @@ def build_missing_info_message(info):
         "เวลา: ...\n"
         "จังหวัด: ...\n"
         "เพศ: ..."
+    )
+
+
+def build_user_profile_message(user):
+    birth_date = user.birth_date.strftime("%d/%m/%Y") if user.birth_date else "-"
+    birth_time = user.birth_time.strftime("%H:%M") if user.birth_time else "-"
+
+    return (
+        f"ชื่อ: {user.full_name}\n"
+        f"เกิด: {birth_date}\n"
+        f"เวลา: {birth_time}\n"
+        f"จังหวัด: {user.birth_place}\n"
+        f"เพศ: {user.gender}\n"
     )
 
 

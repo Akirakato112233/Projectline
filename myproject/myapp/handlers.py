@@ -1,7 +1,7 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from .models import User
+from .models import User, UserMessage, SystemEventLog
 from .api.services import call_dify_astrology
 from .services import (
     calculate_star_positions,
@@ -14,6 +14,14 @@ from .services import (
 def process_user_message(user_id, message_text):
     user, created = User.objects.get_or_create(line_user_id=user_id)
     message_text = message_text.strip()
+    user.last_active_at = datetime.now(ZoneInfo("Asia/Bangkok"))
+    user.save(update_fields=["last_active_at"])
+
+    UserMessage.objects.create(
+        user=user, 
+        message_text=message_text,
+        message_type="text",
+        )
 
 
     if user.step < 2:

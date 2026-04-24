@@ -28,6 +28,8 @@ from myapp.handlers import process_user_message
 
 logger = logging.getLogger(__name__)
 
+from myapp.models import WebhookLog, SystemEventLog
+
 
 @lru_cache(maxsize=1)
 def get_handler() -> WebhookHandler | None:
@@ -60,10 +62,32 @@ def webhook(request):
 
     try:
         handler.handle(body, signature)
-    except InvalidSignatureError:
+    except InvalidSignatureError as e:
+        WebhookLog.objects.create(
+            status_code=400,
+            is_success=False,
+            error_message=str(e),
+        )
+        SystemEventLog.objects.create(
+            level="error",
+            event_type="invalid_signature",
+            title="LINE webhook signature ไม่ถูกต้อง",
+            detail=str(e),
+        )
         logger.exception("Invalid LINE signature")
         return HttpResponseBadRequest("Invalid signature")
     except Exception as e:
+        WebhookLog.objects.create(
+            status_code=500,
+            is_success=False,
+            error_message=str(e),
+        )
+        SystemEventLog.objects.create(
+            level="error",
+            event_type="webhook_failed",
+            title="Webhook processing failed",
+            detail=str(e),
+        )
         logger.exception("Webhook processing failed")
         return HttpResponseBadRequest(str(e))
 
@@ -74,7 +98,9 @@ def handle_message(event):
     user_text = event.message.text
     reply_message = process_user_message(event.source.user_id, user_text)
     configuration = get_configuration()
+
     logger.info("Received LINE message: %s", user_text)
+
     if configuration is None:
         raise ValueError("LINE_CHANNEL_ACCESS_TOKEN is not configured")
 
@@ -86,8 +112,36 @@ def handle_message(event):
                     reply_token=event.reply_token,
                     messages=[TextMessage(text=reply_message)],
                 )
-                )
+            )
+
+        WebhookLog.objects.create(
+            line_user_id=event.source.user_id,
+            event_type=event.type,
+            status_code=200,
+            is_success=True,
+        )
+        SystemEventLog.objects.create(
+            level="info",
+            event_type="line_reply_success",
+            title="ส่งข้อความตอบกลับ LINE สำเร็จ",
+            detail=f"user_id={event.source.user_id}, message={user_text}",
+        )
+
     except ApiException as e:
+        WebhookLog.objects.create(
+            line_user_id=event.source.user_id,
+            event_type=event.type,
+            status_code=e.status,
+            is_success=False,
+            error_message=e.body or e.reason,
+        )
+        SystemEventLog.objects.create(
+            level="error",
+            event_type="line_reply_failed",
+            title="LINE reply API failed",
+            detail=e.body or e.reason,
+        )
+
         logger.exception("LINE reply API failed")
         raise ValueError(
             f"LINE reply API failed: status={e.status}, reason={e.reason}, body={e.body}"

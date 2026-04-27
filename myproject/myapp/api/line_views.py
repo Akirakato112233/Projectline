@@ -60,6 +60,21 @@ def webhook(request):
     signature = request.headers.get("X-Line-Signature")
     body = request.body.decode("utf-8")
 
+    if not signature:
+        WebhookLog.objects.create(
+            status_code=400,
+            is_success=False,
+            error_message="Missing X-Line-Signature header",
+        )
+        SystemEventLog.objects.create(
+            level="error",
+            event_type="missing_signature",
+            title="LINE webhook ไม่มี signature",
+            detail="Missing X-Line-Signature header",
+        )
+        logger.warning("Missing LINE signature header")
+        return HttpResponseBadRequest("Missing signature")
+
     try:
         handler.handle(body, signature)
     except InvalidSignatureError as e:

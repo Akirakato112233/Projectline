@@ -18,22 +18,31 @@ from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
+load_dotenv(BASE_DIR.parent / ".env")
+
+
+def get_env_list(name, default=None):
+    value = os.getenv(name, "")
+    if not value:
+        return default or []
+    return [item.strip() for item in value.split(",") if item.strip()]
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-m7tnidox9bwiny&1hmc2x_gg6c9o*(!%#+#d2uo7=zng(+u8$1'
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-m7tnidox9bwiny&1hmc2x_gg6c9o*(!%#+#d2uo7=zng(+u8$1")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DJANGO_DEBUG", "true").lower() == "true"
 
-ALLOWED_HOSTS = [
+default_allowed_hosts = [
     "localhost",
     "127.0.0.1",
     "putative-renea-whisperingly.ngrok-free.dev",
 ]
+ALLOWED_HOSTS = get_env_list("DJANGO_ALLOWED_HOSTS", default_allowed_hosts)
 
 
 
@@ -47,9 +56,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'myapp.apps.MyappConfig',
+    'rest_framework',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -58,6 +70,21 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+default_cors_allowed_origins = [
+    "http://127.0.0.1:5173",
+    "http://localhost:5173",
+    "http://127.0.0.1:5174",
+    "http://localhost:5174",
+    "http://127.0.0.1:5175",
+    "http://localhost:5175",
+]
+CORS_ALLOWED_ORIGINS = get_env_list("DJANGO_CORS_ALLOWED_ORIGINS", default_cors_allowed_origins)
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^http://127\.0\.0\.1:5\d{3}$",
+    r"^http://localhost:5\d{3}$",
+]
+CORS_ALLOW_CREDENTIALS = True
+
 
 ROOT_URLCONF = 'myproject.urls'
 
@@ -130,6 +157,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

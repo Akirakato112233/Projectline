@@ -2,28 +2,38 @@ import swisseph as swe
 from datetime import datetime
 from rapidfuzz import process
 
-def calculate_star_positions(birth_date, birth_time):
-    dt = datetime.combine(birth_date, birth_time)
-    
-    # คำนวณหาค่า Julian Day (เวลาทางดาราศาสตร์)
-    jd = swe.julday(dt.year, dt.month, dt.day, dt.hour + dt.minute/60 - 7) # -7 คือเวลาไทย
+ZODIAC_NAMES = [
+    "เมษ", "พฤษภ", "เมถุน", "กรกฎ", "สิงห์", "กันย์",
+    "ตุลย์", "พิจิก", "ธนู", "มังกร", "กุมภ์", "มีน",
+]
 
-    # 2. รายชื่อดาวที่ต้องการ (0=อาทิตย์, 1=จันทร์, 2=พุธ ...)
+SIDEREAL_FLAGS = swe.FLG_SWIEPHs | swe.FLG_SIDEREAL
+
+
+def get_birth_julian_day(birth_date, birth_time):
+    dt = datetime.combine(birth_date, birth_time)
+    hour = dt.hour + dt.minute / 60 + dt.second / 3600
+    return swe.julday(dt.year, dt.month, dt.day, hour - 7)
+
+
+def get_zodiac_name(longitude):
+    zodiac_index = int(longitude / 30)
+    return ZODIAC_NAMES[zodiac_index]
+
+
+def calculate_star_positions(birth_date, birth_time):
+    swe.set_sid_mode(swe.SIDM_LAHIRI)
+    jd = get_birth_julian_day(birth_date, birth_time)
+
     planets_to_calc = {
-        "Sun": swe.SUN, "Moon": swe.MOON, "Mars": swe.MARS, 
+        "Sun": swe.SUN, "Moon": swe.MOON, "Mars": swe.MARS,
         "Mercury": swe.MERCURY, "Jupiter": swe.JUPITER, "Saturn": swe.SATURN
     }
 
     results = {}
     for name, code in planets_to_calc.items():
-        # คำนวณพิกัดดาว (Longitude)
-        planet_longitude = swe.calc_ut(jd, code)[0][0]
-        
-        # แปลงพิกัดเป็น "ราศี" (1 ราศี = 30 องศา)
-        zodiac_index = int(planet_longitude / 30)
-        zodiac_names = ["เมษ", "พฤษภ", "เมถุน", "กรกฎ", "สิงห์", "กันย์", 
-                        "ตุลย์", "พิจิก", "ธนู", "มังกร", "กุมภ์", "มีน"]
-        results[name] = zodiac_names[zodiac_index]
+        planet_longitude = swe.calc_ut(jd, code, SIDEREAL_FLAGS)[0][0]
+        results[name] = get_zodiac_name(planet_longitude)
 
     return results
 
@@ -76,32 +86,9 @@ def get_smart_province(user_input):
         return best_match
     else:
         return "กรุงเทพ"
-
-import swisseph as swe
-
 def calculate_with_ascendant(birth_date, birth_time, lat, lon):
-    # 1. ตั้งค่าให้เป็นระบบ Sidereal (นิรายนะ) แบบ Lahiri
-    swe.set_sid_mode(swe.SIDM_LAHIRI) 
-    
-    # 2. เตรียม Julian Day (เวลาสากล UTC+7)
-    dt = datetime.combine(birth_date, birth_time)
-    # ควรใช้เวลาสากล (UTC) ในการคำนวณ 
-    # ถ้าเกิดที่ไทย (UTC+7) ต้องลบออก 7 ชั่วโมง
-    jd_utc = swe.julday(dt.year, dt.month, dt.day, (dt.hour + dt.minute/60) - 7)
-
-    # 3. คำนวณหาลัคนา (Ascendant)
-    # เพิ่ม Flag: swe.FLG_SIDEREAL เพื่อบอกให้คำนวณแบบนิรายนะ
-    # ระบบเรือนชะตาไทยส่วนใหญ่ใช้แบบ Whole Sign หรือ Equal 
-    # แต่ถ้าจะเอาแค่ลัคนา ใช้ระบบ 'P' หรือ 'O' ก็ได้ค่า Ascendant เท่ากันครับ
-    houses, ascmc = swe.houses_ex(jd_utc, swe.FLG_SIDEREAL, lat, lon, b'P')
-    
-    ascendant_degree = ascmc[0] 
-    
-    # 4. แปลงองศาเป็นชื่อราศี
-    zodiac_names = ["เมษ", "พฤษภ", "เมถุน", "กรกฎ", "สิงห์", "กันย์", 
-                    "ตุลย์", "พิจิก", "ธนู", "มังกร", "กุมภ์", "มีน"]
-    
-    asc_index = int(ascendant_degree / 30)
-    asc_zodiac = zodiac_names[asc_index]
-    
-    return asc_zodiac
+    swe.set_sid_mode(swe.SIDM_LAHIRI)
+    jd_utc = get_birth_julian_day(birth_date, birth_time)
+    houses, ascmc = swe.houses_ex(jd_utc, lat, lon, b'P', swe.FLG_SIDEREAL)
+    ascendant_degree = ascmc[0]
+    return get_zodiac_name(ascendant_degree)

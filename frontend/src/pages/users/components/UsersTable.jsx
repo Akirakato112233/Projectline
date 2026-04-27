@@ -1,6 +1,9 @@
 import { CheckCircle2, ChevronDown, CircleX } from "lucide-react"
 
 function getInitial(name) {
+  if (!name) {
+    return "-"
+  }
   return name.trim().charAt(0)
 }
 
@@ -20,7 +23,35 @@ function statusConfig(status) {
   }
 }
 
-function UsersTable({ users }) {
+function formatLastActive(value) {
+  if (!value) {
+    return "-"
+  }
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return "-"
+  }
+
+  const diffMinutes = Math.max(Math.floor((Date.now() - date.getTime()) / 60000), 0)
+
+  if (diffMinutes < 1) {
+    return "เมื่อสักครู่"
+  }
+  if (diffMinutes < 60) {
+    return `${diffMinutes} นาทีที่ผ่านมา`
+  }
+
+  const diffHours = Math.floor(diffMinutes / 60)
+  if (diffHours < 24) {
+    return `ประมาณ ${diffHours} ชั่วโมงที่ผ่านมา`
+  }
+
+  const diffDays = Math.floor(diffHours / 24)
+  return `${diffDays} วันที่ผ่านมา`
+}
+
+function UsersTable({ users, onViewDetails }) {
   return (
     <section className="mt-5 overflow-hidden rounded-xl border border-slate-700/70 bg-slate-800/90">
       <div className="grid grid-cols-[2.1fr_1.7fr_1.4fr_0.8fr_2fr_1fr] gap-6 border-b border-slate-700/70 bg-slate-900/70 px-6 py-4 text-sm font-semibold text-slate-400">
@@ -36,9 +67,19 @@ function UsersTable({ users }) {
       </div>
 
       <div>
+        {users.length === 0 ? (
+          <div className="px-6 py-10 text-center text-slate-400">ไม่พบข้อมูลผู้ใช้ตามเงื่อนไขที่เลือก</div>
+        ) : null}
+
         {users.map((user) => {
-          const config = statusConfig(user.status)
+          const status = user.step >= 2 ? "complete" : "incomplete"
+          const config = statusConfig(status)
           const StatusIcon = config.icon
+          const displayName = user.full_name || "-"
+          const zodiac = user.zodiac_sign || "-"
+          const lineUserId = user.line_user_id || "-"
+          const questions = user.question_count ?? "-"
+          const lastActive = formatLastActive(user.last_active_at)
 
           return (
             <div
@@ -47,17 +88,17 @@ function UsersTable({ users }) {
             >
               <div className="flex items-center gap-4">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 text-xs font-bold text-white">
-                  {getInitial(user.name)}
+                  {getInitial(displayName)}
                 </div>
                 <div className="min-w-0">
-                  <div className="truncate text-base font-semibold text-slate-100">{user.name}</div>
-                  <div className="mt-1 text-sm text-slate-400">{user.zodiac}</div>
+                  <div className="truncate text-base font-semibold text-slate-100">{displayName}</div>
+                  <div className="mt-1 text-sm text-slate-400">{zodiac}</div>
                 </div>
               </div>
 
               <div className="flex items-center">
                 <span className="rounded-md bg-slate-900 px-3 py-1.5 text-sm text-slate-300">
-                  {user.lineId}
+                  {lineUserId}
                 </span>
               </div>
 
@@ -69,13 +110,16 @@ function UsersTable({ users }) {
               </div>
 
               <div className="flex items-center text-base font-medium text-slate-200">
-                {user.questions}
+                {questions}
               </div>
 
-              <div className="flex items-center text-base text-slate-300">{user.lastActive}</div>
+              <div className="flex items-center text-base text-slate-300">{lastActive}</div>
 
               <div className="flex items-center justify-end">
-                <button className="text-sm font-semibold text-emerald-400 hover:text-emerald-300">
+                <button
+                  onClick={() => onViewDetails(user)}
+                  className="text-sm font-semibold text-emerald-400 hover:text-emerald-300"
+                >
                   ดูรายละเอียด
                 </button>
               </div>

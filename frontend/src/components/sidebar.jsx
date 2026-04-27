@@ -2,7 +2,6 @@ import {
   FileText,
   LayoutDashboard,
   MessageSquare,
-  Settings,
   Sparkles,
   Stars,
   UserX,
@@ -16,10 +15,46 @@ const menuItems = [
   { id: "dify", label: "Dify Requests", icon: MessageSquare },
   { id: "astrology", label: "ข้อมูลโหราศาสตร์", icon: Stars },
   { id: "logs", label: "System Logs", icon: FileText },
-  { id: "settings", label: "การตั้งค่า", icon: Settings },
 ]
 
-export function Sidebar({ activeView, onViewChange }) {
+function buildSystemStatus(healthSummary) {
+  if (!healthSummary) {
+    return {
+      dotClass: "bg-slate-500",
+      textClass: "text-slate-200",
+      label: "กำลังตรวจสอบ",
+      detail: "กำลังโหลดสถานะระบบ",
+    }
+  }
+
+  const services = [
+    healthSummary.line_webhook,
+    healthSummary.dify_api,
+    healthSummary.django_backend,
+  ].filter(Boolean)
+
+  const errorCount = services.filter((item) => item.status !== "ok").length
+
+  if (errorCount === 0) {
+    return {
+      dotClass: "bg-emerald-500",
+      textClass: "text-emerald-300",
+      label: "ทำงานปกติ",
+      detail: "ทุกบริการพร้อมใช้งาน",
+    }
+  }
+
+  return {
+    dotClass: "bg-rose-500",
+    textClass: "text-rose-300",
+    label: "มีปัญหา",
+    detail: `${errorCount} บริการต้องตรวจสอบ`,
+  }
+}
+
+export function Sidebar({ activeView, onViewChange, healthSummary }) {
+  const systemStatus = buildSystemStatus(healthSummary)
+
   return (
     <aside className="sticky top-0 flex h-screen w-[248px] shrink-0 flex-col border-r border-slate-700/70 bg-slate-900">
       <div className="border-b border-slate-700/70 px-4 py-5">
@@ -61,10 +96,11 @@ export function Sidebar({ activeView, onViewChange }) {
       <div className="px-3 py-4">
         <div className="rounded-xl bg-slate-800 px-4 py-4">
           <div className="text-sm font-semibold text-slate-300">System Status</div>
-          <div className="mt-3 flex items-center gap-2 text-sm text-slate-200">
-            <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-            ทำงานปกติ
+          <div className={`mt-3 flex items-center gap-2 text-sm ${systemStatus.textClass}`}>
+            <span className={`h-2.5 w-2.5 rounded-full ${systemStatus.dotClass}`} />
+            {systemStatus.label}
           </div>
+          <div className="mt-2 text-xs text-slate-400">{systemStatus.detail}</div>
         </div>
       </div>
     </aside>

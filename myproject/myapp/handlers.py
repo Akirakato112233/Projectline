@@ -25,32 +25,23 @@ def process_user_message(user_id, message_text):
 
 
     if user.step < 2:
-
         info = extract_data(message_text)
+        error_message = update_user_profile_from_info(user, info)
+        if error_message:
+            return error_message
 
-        if 'name' in info and 'date' in info and 'time' in info and 'place' in info and 'gender' in info:
-            try:
-                birth_date = parse_thai_birth_date(info['date'])
-                birth_time = parse_birth_time(info['time'])
-            except ValueError:
-                return "รูปแบบวันเกิดหรือเวลาไม่ถูกต้องครับ กรุณาส่งเป็น:\nเกิด: 15/05/2535\nเวลา: 08:30"
-
-            user.full_name = info['name']
-            user.birth_place = get_smart_province(info['place'])
-            user.birth_date = birth_date
-            user.birth_time = birth_time
-            user.gender = info['gender']
-
+        if is_profile_complete(user):
             stars = calculate_star_positions(user.birth_date, user.birth_time)
-            user.star_positions = stars 
             lat, lon = get_smart_lat_lon(user.birth_place)
-            user.zodiac_sign = calculate_with_ascendant(user.birth_date, user.birth_time, lat, lon)
+            ascendant_sign = calculate_with_ascendant(user.birth_date, user.birth_time, lat, lon)
+            stars["Ascendant"] = ascendant_sign
+            user.star_positions = stars
+            user.zodiac_sign = stars.get("Sun", "")
             user.step = 2
             user.save()
             return f"เรียบร้อยครับคุณ {user.full_name} ทีนี้อยากถามอะไร พิมพ์มาได้เลย!"
-        
-        else:
-            return build_missing_info_message(info)
+
+        return build_missing_info_message(user)
 
     now = datetime.now(ZoneInfo("Asia/Bangkok"))
     star_data = {
@@ -70,52 +61,122 @@ def process_user_message(user_id, message_text):
         user_query=message_text,
         star_data=star_data,
         user_id=user.line_user_id,
+        user=user,
     )
 
 
 def extract_data(text):
     result = {}
-    
-    lines = text.split('\n') 
-    
+
+    lines = text.replace("：", ":").split("\n")
+
     for line in lines:
-        if ':' in line:
-            parts = line.split(':', 1)
-            key = parts[0].strip()  
-            value = parts[1].strip() 
-            
-            if "ชื่อ" in key: result['name'] = value
-            if "เกิด" in key: result['date'] = value
-            if "เวลา" in key: result['time'] = value
-            if "เพศ" in key: result['gender'] = value
-            if "จังหวัด" in key: result['place'] = value
-            
+        if ":" in line:
+            parts = line.split(":", 1)
+            key = parts[0].strip()
+            value = parts[1].strip()
+
+            if "ชื่อ" in key:
+                result["name"] = value
+            if "เกิด" in key:
+                result["date"] = value
+            if "เวลา" in key:
+                result["time"] = value
+            if "เพศ" in key:
+                result["gender"] = value
+            if "จังหวัด" in key:
+                result["place"] = value
+
     return result
 
 
-def build_missing_info_message(info):
+def update_user_profile_from_info(user, info):
+    if info.get("name"):
+        user.full_name = info["name"]
+
+    if info.get("place"):
+        user.birth_place = get_smart_province(info["place"])
+
+    if info.get("gender"):
+        user.gender = info["gender"]
+
+    if info.get("date"):
+        try:
+            user.birth_date = parse_thai_birth_date(info["date"])
+        except ValueError:
+            user.save()
+            return build_invalid_format_message(user, invalid_date=True)
+
+    if info.get("time"):
+        try:
+            user.birth_time = parse_birth_time(info["time"])
+        except ValueError:
+            user.save()
+            return build_invalid_format_message(user, invalid_time=True)
+
+    user.save()
+    return None
+
+
+def is_profile_complete(user):
+    return all([
+        user.full_name,
+        user.birth_date,
+        user.birth_time,
+        user.birth_place,
+        user.gender,
+    ])
+
+
+def build_missing_info_message(user):
     required_fields = {
-        'name': 'ชื่อ',
-        'date': 'เกิด',
-        'time': 'เวลา',
-        'place': 'จังหวัด',
-        'gender': 'เพศ',
+        "full_name": "ชื่อ",
+        "birth_date": "เกิด",
+        "birth_time": "เวลา",
+        "birth_place": "จังหวัด",
+        "gender": "เพศ",
     }
     missing_fields = [
         label
-        for key, label in required_fields.items()
-        if key not in info or not info[key]
+        for field_name, label in required_fields.items()
+        if not getattr(user, field_name)
     ]
     missing_text = ", ".join(missing_fields)
+
+    birth_date = user.birth_date.strftime("%d/%m/%Y") if user.birth_date else "..."
+    birth_time = user.birth_time.strftime("%H:%M") if user.birth_time else "..."
+    full_name = user.full_name or "..."
+    birth_place = user.birth_place or "..."
+    gender = user.gender or "..."
 
     return (
         f"ข้อมูลยังไม่ครบครับ ขาด: {missing_text}\n"
         "กรุณาส่งข้อมูลให้ครบตามรูปแบบนี้ครับเพื่อที่จะได้ทำนายได้ถูกต้อง:\n"
-        "ชื่อ: ...\n"
-        "เกิด: ...\n"
-        "เวลา: ...\n"
-        "จังหวัด: ...\n"
-        "เพศ: ..."
+        f"ชื่อ: {full_name}\n"
+        f"เกิด: {birth_date}\n"
+        f"เวลา: {birth_time}\n"
+        f"จังหวัด: {birth_place}\n"
+        f"เพศ: {gender}"
+    )
+
+
+def build_invalid_format_message(user, invalid_date=False, invalid_time=False):
+    invalid_fields = []
+    if invalid_date:
+        invalid_fields.append("วันเกิด")
+    if invalid_time:
+        invalid_fields.append("เวลา")
+
+    invalid_text = " และ ".join(invalid_fields)
+
+    return (
+        f"รูปแบบ{invalid_text}ไม่ถูกต้องครับ\n"
+        "กรุณาส่งใหม่ตามรูปแบบนี้:\n"
+        f"ชื่อ: {user.full_name or '...'}\n"
+        f"เกิด: {user.birth_date.strftime('%d/%m/%Y') if user.birth_date else '15/05/2535'}\n"
+        f"เวลา: {user.birth_time.strftime('%H:%M') if user.birth_time else '08:30'}\n"
+        f"จังหวัด: {user.birth_place or '...'}\n"
+        f"เพศ: {user.gender or '...'}"
     )
 
 

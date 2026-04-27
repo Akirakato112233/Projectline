@@ -11,7 +11,7 @@ function ZodiacChartCard({ data, title }) {
             <div className="text-sm text-slate-300">{item.label}</div>
             <div className="h-5 rounded-full bg-slate-700/80">
               <div
-                className="h-full rounded-full bg-amber-400"
+                className="h-full rounded-full bg-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.25)]"
                 style={{ width: `${(item.value / maxValue) * 100}%` }}
               />
             </div>

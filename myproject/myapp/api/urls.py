@@ -1,6 +1,6 @@
 from django.urls import path
 
-from myapp.api import astrology_views, auth_views, dashboard_views, dify_views, health_views, line_views, log_views, settings_views, user_views
+from myapp.api import astrology_views, auth_views, dashboard_views, dify_views, health_views, line_views, log_views, user_views
 
 urlpatterns = [
     path("auth/login/", auth_views.admin_login, name="admin-login"),
@@ -15,5 +15,4 @@ urlpatterns = [
     path("health/", health_views.health_status, name="health-status"),
     path("system-events/", log_views.system_event_list, name="system-event-list"),
     path("webhook-logs/", log_views.webhook_log_list, name="webhook-log-list"),
-    path("settings/", settings_views.app_settings_view, name="app-settings"),
 ]

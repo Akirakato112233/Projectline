@@ -7,7 +7,7 @@ ZODIAC_NAMES = [
     "ตุลย์", "พิจิก", "ธนู", "มังกร", "กุมภ์", "มีน",
 ]
 
-SIDEREAL_FLAGS = swe.FLG_SWIEPHs | swe.FLG_SIDEREAL
+SIDEREAL_FLAGS = swe.FLG_SWIEPH | swe.FLG_SIDEREAL
 
 
 def get_birth_julian_day(birth_date, birth_time):

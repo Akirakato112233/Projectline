@@ -15,4 +15,6 @@ urlpatterns = [
     path("health/", health_views.health_status, name="health-status"),
     path("system-events/", log_views.system_event_list, name="system-event-list"),
     path("webhook-logs/", log_views.webhook_log_list, name="webhook-log-list"),
+    path("liff/profile/", user_views.liff_user_profile, name="liff-user-profile"),
+
 ]

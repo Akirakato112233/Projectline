@@ -65,3 +65,18 @@ def incomplete_user_list(request):
         })
 
     return Response(data)
+
+@api_view(["GET"])
+def liff_user_profile(request):
+    line_user_id = request.GET.get("line_user_id", "").strip()
+
+    if not line_user_id:
+        return Response({"message": "line_user_id is required"}, status=400)
+
+    try:
+        user = User.objects.get(line_user_id=line_user_id)
+    except User.DoesNotExist:
+        return Response({"message": "User not found"}, status=404)
+
+    serializer = UserSerializer(user)
+    return Response(serializer.data)

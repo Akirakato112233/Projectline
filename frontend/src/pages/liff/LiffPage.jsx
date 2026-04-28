@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { apiUrl } from "../../utils/api"
 import liff from "@line/liff"
 
-const LIFF_ID = "2009924979-jIX8knKN"
+const LIFF_ID = "2009926141-ffsT1WhN"
 
 function LiffPage() {
     const [loading, setLoading] = useState(true)

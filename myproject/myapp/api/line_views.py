@@ -18,6 +18,9 @@ from linebot.v3.messaging import (
     MessagingApi,
     ReplyMessageRequest,
     TextMessage,
+    QuickReply,
+    QuickReplyItem,
+    MessageAction,
 )
 from linebot.v3.webhooks import MessageEvent, TextMessageContent
 
@@ -111,13 +114,72 @@ def webhook(request):
 
 def handle_message(event):
     user_text = event.message.text
-    reply_message = process_user_message(event.source.user_id, user_text)
     configuration = get_configuration()
 
     logger.info("Received LINE message: %s", user_text)
 
     if configuration is None:
         raise ValueError("LINE_CHANNEL_ACCESS_TOKEN is not configured")
+
+    if user_text == "เมนูการงานการเรียน":
+        try:
+            with ApiClient(configuration) as api_client:
+                line_bot_api = MessagingApi(api_client)
+                line_bot_api.reply_message(
+                    ReplyMessageRequest(
+                        reply_token=event.reply_token,
+                        messages=[
+                            TextMessage(
+                                text="เลือกหัวข้อที่ต้องการได้เลย",
+                                quick_reply=QuickReply(
+                                    items=[
+                                        QuickReplyItem(
+                                            action=MessageAction(label="การงาน", text="การงาน")
+                                        ),
+                                        QuickReplyItem(
+                                            action=MessageAction(label="การเรียน", text="การเรียน")
+                                        ),
+                                    ]
+                                ),
+                            )
+                        ],
+                    )
+                )
+
+            WebhookLog.objects.create(
+                line_user_id=event.source.user_id,
+                event_type=event.type,
+                status_code=200,
+                is_success=True,
+            )
+            SystemEventLog.objects.create(
+                level="info",
+                event_type="line_quick_reply_success",
+                title="ส่ง quick reply เมนูการงานการเรียนสำเร็จ",
+                detail=f"user_id={event.source.user_id}",
+            )
+            return
+
+        except ApiException as e:
+            WebhookLog.objects.create(
+                line_user_id=event.source.user_id,
+                event_type=event.type,
+                status_code=e.status,
+                is_success=False,
+                error_message=e.body or e.reason,
+            )
+            SystemEventLog.objects.create(
+                level="error",
+                event_type="line_quick_reply_failed",
+                title="ส่ง quick reply เมนูการงานการเรียนไม่สำเร็จ",
+                detail=e.body or e.reason,
+            )
+            logger.exception("LINE quick reply failed")
+            raise ValueError(
+                f"LINE quick reply failed: status={e.status}, reason={e.reason}, body={e.body}"
+            ) from e
+
+    reply_message = process_user_message(event.source.user_id, user_text)
 
     try:
         with ApiClient(configuration) as api_client:
@@ -161,6 +223,7 @@ def handle_message(event):
         raise ValueError(
             f"LINE reply API failed: status={e.status}, reason={e.reason}, body={e.body}"
         ) from e
+
 
 
 handler = get_handler()

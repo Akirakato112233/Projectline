@@ -4,11 +4,18 @@ import AuthGuard from "./components/AuthGuard"
 import { apiUrl } from "./utils/api"
 import HomePage from "./pages/HomePage"
 import LoginPage from "./pages/auth/LoginPage"
+import LiffPage from "./pages/liff/LiffPage"
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null)
   const [checkingAuth, setCheckingAuth] = useState(true)
 
+  const isLiffRoute =
+    typeof window !== "undefined" && window.location.pathname.startsWith("/liff")
+
+  if (isLiffRoute) {
+    return <LiffPage />
+  }
   useEffect(() => {
     async function fetchCurrentUser() {
       try {

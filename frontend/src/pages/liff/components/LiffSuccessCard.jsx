@@ -1,3 +1,16 @@
+const formatThaiDate = (dateString) => {
+  if (!dateString) return "-"
+
+  const date = new Date(`${dateString}T00:00:00`)
+
+  if (Number.isNaN(date.getTime())) return dateString
+
+  return new Intl.DateTimeFormat("th-TH", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(date)
+}
 function LiffSuccessCard({ userData, onEditAgain, onClose }) {
   return (
     <div className="rounded-2xl border border-[rgba(212,175,55,0.3)] bg-[rgba(45,27,78,0.6)] p-6 text-center shadow-2xl shadow-[#8b5cf6]/20 backdrop-blur-xl md:p-8">
@@ -15,7 +28,7 @@ function LiffSuccessCard({ userData, onEditAgain, onClose }) {
       <div className="mt-6 rounded-xl border border-[rgba(212,175,55,0.2)] bg-[rgba(26,11,46,0.45)] p-4 text-left">
         <div className="space-y-2 text-sm text-[#f5f5dc]">
           <div>ชื่อ: {userData?.full_name || "-"}</div>
-          <div>วันเกิด: {userData?.birth_date || "-"}</div>
+          <div>วันเกิด: {formatThaiDate(userData?.birth_date)}</div>
           <div>เวลาเกิด: {userData?.birth_time ? String(userData.birth_time).slice(0, 5) : "-"}</div>
           <div>จังหวัดเกิด: {userData?.birth_place || "-"}</div>
           <div>เพศ: {userData?.gender || "-"}</div>

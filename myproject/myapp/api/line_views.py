@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 from myapp.models import WebhookLog, SystemEventLog
 
 
-TAROT_CARD_BACK_URL = "https://astroflow.a-zens.com/static/myapp/images/tarot-card-back.svg"
+TAROT_CARD_BACK_URL = "https://astroflow.a-zens.com/static/myapp/images/tarot-card-back.png"
 TAROT_PICK_PREFIXES = {
     "ทั่วไป": "TAROT_GENERAL",
     "ความรัก": "TAROT_LOVE",

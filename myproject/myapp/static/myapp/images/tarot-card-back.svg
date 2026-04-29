@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1350" viewBox="0 0 900 1350" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="90" y1="72" x2="810" y2="1278" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#24103F"/>
+      <stop offset="1" stop-color="#341A59"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="450" y1="120" x2="450" y2="1230" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F5D36A"/>
+      <stop offset="1" stop-color="#C6932D"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(450 675) rotate(90) scale(360 260)">
+      <stop stop-color="#7D58D6" stop-opacity="0.34"/>
+      <stop offset="1" stop-color="#7D58D6" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="900" height="1350" rx="54" fill="url(#bg)"/>
+  <rect x="28" y="28" width="844" height="1294" rx="40" stroke="url(#gold)" stroke-width="7"/>
+  <rect x="58" y="58" width="784" height="1234" rx="28" stroke="#6D4A9B" stroke-width="3"/>
+  <rect x="96" y="96" width="708" height="1158" rx="24" fill="url(#glow)" stroke="#E1B650" stroke-opacity="0.72" stroke-width="4"/>
+
+  <circle cx="450" cy="675" r="170" fill="#2B1450" stroke="url(#gold)" stroke-width="6"/>
+  <circle cx="450" cy="675" r="126" stroke="#7B5AB5" stroke-width="3"/>
+
+  <g stroke="url(#gold)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M450 555L472 636H555L488 688L512 770L450 720L388 770L412 688L345 636H428L450 555Z"/>
+  </g>
+
+  <g fill="#E9C55A">
+    <circle cx="450" cy="430" r="8"/>
+    <circle cx="450" cy="920" r="8"/>
+    <circle cx="205" cy="675" r="8"/>
+    <circle cx="695" cy="675" r="8"/>
+    <circle cx="277" cy="502" r="6"/>
+    <circle cx="623" cy="502" r="6"/>
+    <circle cx="277" cy="848" r="6"/>
+    <circle cx="623" cy="848" r="6"/>
+  </g>
+
+  <g stroke="#8D68C9" stroke-width="3" opacity="0.85">
+    <path d="M450 320V1030"/>
+    <path d="M95 675H805"/>
+    <path d="M195 420L705 930"/>
+    <path d="M705 420L195 930"/>
+  </g>
+
+  <g stroke="url(#gold)" stroke-width="4" opacity="0.88" fill="none">
+    <path d="M130 226C164 226 190 200 190 166C190 200 216 226 250 226C216 226 190 252 190 286C190 252 164 226 130 226Z"/>
+    <path d="M650 226C684 226 710 200 710 166C710 200 736 226 770 226C736 226 710 252 710 286C710 252 684 226 650 226Z"/>
+    <path d="M130 1124C164 1124 190 1098 190 1064C190 1098 216 1124 250 1124C216 1124 190 1150 190 1184C190 1150 164 1124 130 1124Z"/>
+    <path d="M650 1124C684 1124 710 1098 710 1064C710 1098 736 1124 770 1124C736 1124 710 1150 710 1184C710 1150 684 1124 650 1124Z"/>
+  </g>
+
+  <g fill="#D8B14A" opacity="0.9">
+    <circle cx="238" cy="320" r="5"/>
+    <circle cx="662" cy="320" r="5"/>
+    <circle cx="238" cy="1030" r="5"/>
+    <circle cx="662" cy="1030" r="5"/>
+    <circle cx="450" cy="250" r="4"/>
+    <circle cx="450" cy="1100" r="4"/>
+  </g>
+</svg>

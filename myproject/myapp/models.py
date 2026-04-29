@@ -49,3 +49,16 @@ class AppSetting(models.Model):
     key = models.CharField(max_length=100, unique=True)
     value = models.JSONField()
     updated_at = models.DateTimeField(auto_now=True)
+
+class TarotCard(models.Model):
+    name = models.CharField(max_length=100)
+    name_th = models.CharField(max_length=100)
+    meaning = models.TextField()
+    advice_love = models.TextField(blank=True)
+    advice_study = models.TextField(blank=True)
+    advice_work = models.TextField(blank=True)
+    advice_life = models.TextField(blank=True)
+    advice_health = models.TextField(blank=True)
+    image_url = models.URLField(blank=True)
+
+

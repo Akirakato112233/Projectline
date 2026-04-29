@@ -354,7 +354,11 @@ def handle_message(event):
                 level="info",
                 event_type="line_tarot_reply_success",
                 title="ส่งผลไพ่ทาโร่สำเร็จ",
-                detail=f"user_id={event.source.user_id}, topic={picked_topic}",
+                detail=(
+                    f"user_id={event.source.user_id}, "
+                    f"topic={picked_topic}, "
+                    f"card_name_th={result['card'].name_th}"
+                ),
             )
             return
 

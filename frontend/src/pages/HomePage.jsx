@@ -7,6 +7,7 @@ import DifyRequestsPage from "./dify/DifyRequestsPage"
 import HomeOverview from "./home/HomeOverview"
 import IncompleteProfilesPage from "./incomplete/IncompleteProfilesPage"
 import SystemLogsPage from "./logs/SystemLogsPage"
+import TarotAnalyticsPage from "./tarot/TarotAnalyticsPage"
 import UsersPage from "./users/UsersPage"
 
 const viewTitles = {
@@ -15,6 +16,7 @@ const viewTitles = {
   incomplete: "โปรไฟล์ไม่สมบูรณ์",
   dify: "Dify Requests",
   astrology: "ข้อมูลโหราศาสตร์",
+  tarot: "ข้อมูลไพ่ทาโร่",
   logs: "System Logs",
 }
 
@@ -67,6 +69,7 @@ function HomePage({ currentUser, onLogout }) {
     incomplete: "ค้นหาโปรไฟล์ไม่สมบูรณ์ หรือข้อมูลที่ขาด...",
     dify: "ค้นหา request, ผู้ใช้, คำถาม...",
     astrology: "ค้นหาข้อมูลจากหน้าปัจจุบัน...",
+    tarot: "ค้นหาข้อมูลจากหน้าปัจจุบัน...",
     logs: "ค้นหา log, error, LINE ID...",
   }
 
@@ -81,6 +84,8 @@ function HomePage({ currentUser, onLogout }) {
       <DifyRequestsPage globalSearchTerm={globalSearchTerm} dateFilter={dateFilter} />
     ) : activeView === "astrology" ? (
       <AstrologyDataPage />
+    ) : activeView === "tarot" ? (
+      <TarotAnalyticsPage />
     ) : activeView === "logs" ? (
       <SystemLogsPage globalSearchTerm={globalSearchTerm} dateFilter={dateFilter} />
     ) : (

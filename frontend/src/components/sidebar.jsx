@@ -6,6 +6,7 @@ import {
   Stars,
   UserX,
   Users,
+  WandSparkles,
 } from "lucide-react"
 
 const menuItems = [
@@ -14,6 +15,7 @@ const menuItems = [
   { id: "incomplete", label: "โปรไฟล์ไม่สมบูรณ์", icon: UserX },
   { id: "dify", label: "Dify Requests", icon: MessageSquare },
   { id: "astrology", label: "ข้อมูลโหราศาสตร์", icon: Stars },
+  { id: "tarot", label: "ข้อมูลไพ่ทาโร่", icon: WandSparkles },
   { id: "logs", label: "System Logs", icon: FileText },
 ]
 

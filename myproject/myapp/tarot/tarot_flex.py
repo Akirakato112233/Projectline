@@ -1,3 +1,36 @@
+GOLD = "#E7B93E"
+PURPLE = "#2E1450"
+SOFT_PURPLE = "#70508F"
+WHITE = "#F6F0FF"
+MUTED = "#CFC4E8"
+
+
+def build_text_section(title, text):
+    return {
+        "type": "box",
+        "layout": "vertical",
+        "margin": "lg",
+        "spacing": "sm",
+        "contents": [
+            {
+                "type": "text",
+                "text": title,
+                "color": GOLD,
+                "size": "md",
+                "weight": "bold",
+                "wrap": True,
+            },
+            {
+                "type": "text",
+                "text": text,
+                "color": WHITE,
+                "size": "sm",
+                "wrap": True,
+            },
+        ],
+    }
+
+
 def build_tarot_flex_contents(result):
     if result is None:
         return None
@@ -6,92 +39,61 @@ def build_tarot_flex_contents(result):
     topic = result["topic"]
     advice_text = result["advice_text"]
 
+    advice_title = "คำทำนายวันนี้" if topic == "ทั่วไป" else f"คำทำนายด้าน{topic}"
+
     body_contents = [
         {
             "type": "text",
             "text": "ไพ่ของคุณ",
-            "color": "#E7B93E",
-            "size": "sm",
+            "color": GOLD,
+            "size": "md",
             "weight": "bold",
-            "align": "center"
+            "align": "center",
+        },
+        {
+            "type": "image",
+            "url": card.image_url,
+            "size": "full",
+            "aspectMode": "cover",
+            "aspectRatio": "3:4",
+            "margin": "lg",
         },
         {
             "type": "text",
             "text": card.name_th,
-            "color": "#FFFFFF",
-            "size": "xl",
+            "color": GOLD,
+            "size": "xxl",
             "weight": "bold",
             "align": "center",
             "wrap": True,
-            "margin": "md"
+            "margin": "lg",
         },
         {
             "type": "text",
             "text": card.name,
-            "color": "#CFC4E8",
-            "size": "sm",
+            "color": MUTED,
+            "size": "md",
             "align": "center",
             "wrap": True,
-            "margin": "sm"
+            "margin": "sm",
         },
         {
             "type": "separator",
             "margin": "lg",
-            "color": "#70508F"
+            "color": SOFT_PURPLE,
         },
+        build_text_section("ความหมาย", card.meaning),
         {
-            "type": "text",
-            "text": card.meaning,
-            "color": "#F3EEFF",
-            "size": "sm",
-            "wrap": True,
-            "margin": "lg"
-        }
+            "type": "separator",
+            "margin": "lg",
+            "color": SOFT_PURPLE,
+        },
+        build_text_section(advice_title, advice_text),
     ]
-
-    if topic != "ทั่วไป":
-        body_contents.extend([
-            {
-                "type": "separator",
-                "margin": "lg",
-                "color": "#70508F"
-            },
-            {
-                "type": "text",
-                "text": f"คำทำนายด้าน{topic}",
-                "color": "#E7B93E",
-                "size": "sm",
-                "weight": "bold",
-                "margin": "lg"
-            },
-            {
-                "type": "text",
-                "text": advice_text,
-                "color": "#FFFFFF",
-                "size": "sm",
-                "wrap": True,
-                "margin": "md"
-            }
-        ])
 
     return {
         "type": "bubble",
         "size": "mega",
-        "styles": {
-            "body": {
-                "backgroundColor": "#2E1450"
-            },
-            "footer": {
-                "backgroundColor": "#2E1450"
-            }
-        },
-        "hero": {
-            "type": "image",
-            "url": card.image_url,
-            "size": "full",
-            "aspectRatio": "3:4",
-            "aspectMode": "cover"
-        },
         "body": {
             "type": "box",
             "layout": "vertical",
@@ -99,10 +101,10 @@ def build_tarot_flex_contents(result):
             "contents": body_contents,
             "paddingAll": "20px",
             "borderColor": "#8B6A2B",
-            "borderWidth": "1px",
-            "cornerRadius": "18px",
-            "backgroundColor": "#2E1450"
-        }
+            "borderWidth": "2px",
+            "cornerRadius": "20px",
+            "backgroundColor": PURPLE,
+        },
     }
 
 
@@ -120,13 +122,22 @@ def build_tarot_pick_flex(topic_token_prefix, card_back_url):
                     "weight": "bold",
                     "size": "lg",
                     "align": "center",
-                    "color": "#FFFFFF"
+                    "color": WHITE,
+                },
+                {
+                    "type": "text",
+                    "text": "ตั้งจิตแล้วเลือกใบที่ดึงดูดใจคุณที่สุด",
+                    "size": "sm",
+                    "align": "center",
+                    "color": MUTED,
+                    "wrap": True,
+                    "margin": "md",
                 },
                 {
                     "type": "box",
                     "layout": "horizontal",
                     "spacing": "md",
-                    "margin": "lg",
+                    "margin": "xl",
                     "contents": [
                         {
                             "type": "image",
@@ -137,8 +148,8 @@ def build_tarot_pick_flex(topic_token_prefix, card_back_url):
                             "action": {
                                 "type": "message",
                                 "label": "ใบที่ 1",
-                                "text": f"{topic_token_prefix}_1"
-                            }
+                                "text": f"{topic_token_prefix}_1",
+                            },
                         },
                         {
                             "type": "image",
@@ -149,8 +160,8 @@ def build_tarot_pick_flex(topic_token_prefix, card_back_url):
                             "action": {
                                 "type": "message",
                                 "label": "ใบที่ 2",
-                                "text": f"{topic_token_prefix}_2"
-                            }
+                                "text": f"{topic_token_prefix}_2",
+                            },
                         },
                         {
                             "type": "image",
@@ -161,13 +172,16 @@ def build_tarot_pick_flex(topic_token_prefix, card_back_url):
                             "action": {
                                 "type": "message",
                                 "label": "ใบที่ 3",
-                                "text": f"{topic_token_prefix}_3"
-                            }
-                        }
-                    ]
-                }
+                                "text": f"{topic_token_prefix}_3",
+                            },
+                        },
+                    ],
+                },
             ],
             "paddingAll": "20px",
-            "backgroundColor": "#2E1450"
-        }
+            "borderColor": "#8B6A2B",
+            "borderWidth": "2px",
+            "cornerRadius": "20px",
+            "backgroundColor": PURPLE,
+        },
     }

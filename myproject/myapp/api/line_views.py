@@ -21,6 +21,7 @@ from linebot.v3.messaging import (
     QuickReplyItem,
     MessageAction,
     FlexMessage,
+    FlexContainer,
 )
 from linebot.v3.webhooks import MessageEvent, TextMessageContent
 
@@ -267,7 +268,7 @@ def handle_message(event):
         messages = [
             FlexMessage(
                 alt_text=f"เลือกไพ่ด้าน{user_text}",
-                contents=flex_contents,
+                contents=FlexContainer.from_dict(flex_contents),
             )
         ]
 
@@ -329,7 +330,7 @@ def handle_message(event):
             messages = [
                 FlexMessage(
                     alt_text=f"ไพ่ของคุณ: {result['card'].name_th}",
-                    contents=flex_contents,
+                    contents=FlexContainer.from_dict(flex_contents),
                 )
             ]
 

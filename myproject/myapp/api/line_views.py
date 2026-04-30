@@ -1,5 +1,6 @@
 from functools import lru_cache
 import logging
+import os
 
 import certifi
 from django.conf import settings
@@ -45,6 +46,33 @@ TAROT_PICK_PREFIXES = {
 TAROT_TOKEN_TOPICS = {
     f"{prefix}_": topic for topic, prefix in TAROT_PICK_PREFIXES.items()
 }
+
+
+def is_webhook_load_test_mode() -> bool:
+    return os.getenv("WEBHOOK_LOAD_TEST_MODE", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+
+
+def reply_line_messages(configuration, reply_token: str, messages: list) -> None:
+    if is_webhook_load_test_mode():
+        logger.info("Skipping LINE reply API because WEBHOOK_LOAD_TEST_MODE is enabled")
+        return
+
+    if configuration is None:
+        raise ValueError("LINE_CHANNEL_ACCESS_TOKEN is not configured")
+
+    with ApiClient(configuration) as api_client:
+        line_bot_api = MessagingApi(api_client)
+        line_bot_api.reply_message(
+            ReplyMessageRequest(
+                reply_token=reply_token,
+                messages=messages,
+            )
+        )
 
 
 @lru_cache(maxsize=1)
@@ -131,33 +159,27 @@ def handle_message(event):
 
     logger.info("Received LINE message: %s", user_text)
 
-    if configuration is None:
-        raise ValueError("LINE_CHANNEL_ACCESS_TOKEN is not configured")
-
     if user_text == "เมนูการงานการเรียน":
         try:
-            with ApiClient(configuration) as api_client:
-                line_bot_api = MessagingApi(api_client)
-                line_bot_api.reply_message(
-                    ReplyMessageRequest(
-                        reply_token=event.reply_token,
-                        messages=[
-                            TextMessage(
-                                text="เลือกหัวข้อที่ต้องการได้เลย",
-                                quick_reply=QuickReply(
-                                    items=[
-                                        QuickReplyItem(
-                                            action=MessageAction(label="การงานช่วงนี้", text="การงานช่วงนี้")
-                                        ),
-                                        QuickReplyItem(
-                                            action=MessageAction(label="การเรียนช่วงนี้", text="การเรียนช่วงนี้")
-                                        ),
-                                    ]
+            reply_line_messages(
+                configuration=configuration,
+                reply_token=event.reply_token,
+                messages=[
+                    TextMessage(
+                        text="เลือกหัวข้อที่ต้องการได้เลย",
+                        quick_reply=QuickReply(
+                            items=[
+                                QuickReplyItem(
+                                    action=MessageAction(label="การงานช่วงนี้", text="การงานช่วงนี้")
                                 ),
-                            )
-                        ],
+                                QuickReplyItem(
+                                    action=MessageAction(label="การเรียนช่วงนี้", text="การเรียนช่วงนี้")
+                                ),
+                            ]
+                        ),
                     )
-                )
+                ],
+            )
 
             WebhookLog.objects.create(
                 line_user_id=event.source.user_id,
@@ -194,40 +216,37 @@ def handle_message(event):
 
     if user_text == "ไพ่ทาโร่":
         try:
-            with ApiClient(configuration) as api_client:
-                line_bot_api = MessagingApi(api_client)
-                line_bot_api.reply_message(
-                    ReplyMessageRequest(
-                        reply_token=event.reply_token,
-                        messages=[
-                            TextMessage(
-                                text="เลือกหัวข้อไพ่ทาโร่ได้เลย",
-                                quick_reply=QuickReply(
-                                    items=[
-                                        QuickReplyItem(
-                                            action=MessageAction(label="โดยรวม", text="ทั่วไป")
-                                        ),
-                                        QuickReplyItem(
-                                            action=MessageAction(label="การเรียน", text="การเรียน")
-                                        ),
-                                        QuickReplyItem(
-                                            action=MessageAction(label="ความรัก", text="ความรัก")
-                                        ),
-                                        QuickReplyItem(
-                                            action=MessageAction(label="การงาน", text="การงาน")
-                                        ),
-                                        QuickReplyItem(
-                                            action=MessageAction(label="ชีวิต", text="ชีวิต")
-                                        ),
-                                        QuickReplyItem(
-                                            action=MessageAction(label="สุขภาพ", text="สุขภาพ")
-                                        ),
-                                    ]
+            reply_line_messages(
+                configuration=configuration,
+                reply_token=event.reply_token,
+                messages=[
+                    TextMessage(
+                        text="เลือกหัวข้อไพ่ทาโร่ได้เลย",
+                        quick_reply=QuickReply(
+                            items=[
+                                QuickReplyItem(
+                                    action=MessageAction(label="โดยรวม", text="ทั่วไป")
                                 ),
-                            )
-                        ],
+                                QuickReplyItem(
+                                    action=MessageAction(label="การเรียน", text="การเรียน")
+                                ),
+                                QuickReplyItem(
+                                    action=MessageAction(label="ความรัก", text="ความรัก")
+                                ),
+                                QuickReplyItem(
+                                    action=MessageAction(label="การงาน", text="การงาน")
+                                ),
+                                QuickReplyItem(
+                                    action=MessageAction(label="ชีวิต", text="ชีวิต")
+                                ),
+                                QuickReplyItem(
+                                    action=MessageAction(label="สุขภาพ", text="สุขภาพ")
+                                ),
+                            ]
+                        ),
                     )
-                )
+                ],
+            )
 
             WebhookLog.objects.create(
                 line_user_id=event.source.user_id,
@@ -273,14 +292,11 @@ def handle_message(event):
         ]
 
         try:
-            with ApiClient(configuration) as api_client:
-                line_bot_api = MessagingApi(api_client)
-                line_bot_api.reply_message(
-                    ReplyMessageRequest(
-                        reply_token=event.reply_token,
-                        messages=messages,
-                    )
-                )
+            reply_line_messages(
+                configuration=configuration,
+                reply_token=event.reply_token,
+                messages=messages,
+            )
 
             WebhookLog.objects.create(
                 line_user_id=event.source.user_id,
@@ -335,14 +351,11 @@ def handle_message(event):
             ]
 
         try:
-            with ApiClient(configuration) as api_client:
-                line_bot_api = MessagingApi(api_client)
-                line_bot_api.reply_message(
-                    ReplyMessageRequest(
-                        reply_token=event.reply_token,
-                        messages=messages,
-                    )
-                )
+            reply_line_messages(
+                configuration=configuration,
+                reply_token=event.reply_token,
+                messages=messages,
+            )
 
             WebhookLog.objects.create(
                 line_user_id=event.source.user_id,
@@ -384,14 +397,11 @@ def handle_message(event):
     reply_message = process_user_message(event.source.user_id, user_text)
 
     try:
-        with ApiClient(configuration) as api_client:
-            line_bot_api = MessagingApi(api_client)
-            line_bot_api.reply_message(
-                ReplyMessageRequest(
-                    reply_token=event.reply_token,
-                    messages=[TextMessage(text=reply_message)],
-                )
-            )
+        reply_line_messages(
+            configuration=configuration,
+            reply_token=event.reply_token,
+            messages=[TextMessage(text=reply_message)],
+        )
 
         WebhookLog.objects.create(
             line_user_id=event.source.user_id,
